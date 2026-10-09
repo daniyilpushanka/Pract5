@@ -1,0 +1,69 @@
+import requests
+import json
+import csv
+
+kod = "FP.CPI.TOTL.ZG"
+url = "https://api.worldbank.org/v2/country/ua/indicator/" + kod + "?date=1991:2019&format=json&per_page=100"
+
+f1 = "inflation.json"
+f2 = "inflation.csv"
+
+def get():
+    try:
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            return r.json()
+
+    except:
+        pass
+
+    return None
+
+def json_save(d):
+    try:
+        with open(f1, "w", encoding="utf-8") as file:
+            json.dump(d, file, ensure_ascii=False, indent=4)
+    except:
+        pass
+
+def csv_save(d):
+    a = []
+
+    for x in d[1]:
+        if x["value"] is not None:
+            a.append([
+                x["country"]["value"],
+                x["date"],
+                x["value"]
+            ])
+
+    try:
+        with open(f2, "w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Country", "Year", "Inflation (%)"])
+            writer.writerows(a)
+    except:
+        pass
+
+    return a
+
+def show(d, a):
+    print("\nJSON:")
+
+    for x in d[1]:
+        print(json.dumps(x, ensure_ascii=False))
+
+    print("\nCSV:")
+    print("Country, Year, Inflation (%)")
+
+    for x in a:
+        print(x[0], x[1], x[2])
+
+d = get()
+
+if d:
+    json_save(d)
+    a = csv_save(d)
+    show(d, a)
+
